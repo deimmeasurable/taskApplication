@@ -14,7 +14,6 @@ import java.util.Collection;
 @Builder
 @Table(name = "m_users")
 public class User implements UserDetails {
-    // Add the missing getId method
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
