@@ -1,6 +1,27 @@
 package org.example.service;
 
+import org.example.domain.Status;
+import org.example.domain.Task;
+import org.example.dto.UpdateTaskRequest;
+import org.example.repository.TaskRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import static javax.management.Query.times;
+import static org.hamcrest.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TaskServiceTest {
@@ -14,17 +35,17 @@ class TaskServiceTest {
     private Task sampleTask;
 
     @BeforeEach
-    void setUp() {
-        // User 100 is Assigner, User 200 is Assignee
-        sampleTask = new Task(1L, "Test Task", "High", "pending", 200L, 100L, LocalDateTime.now());
-    }
+//    void setUp() {
+//        // User 100 is Assigner, User 200 is Assignee
+//        sampleTask = new Task(1L, "Test Task", "High", "pending", 200L, 100L, LocalDateTime.now());
+//    }
 
-    // --- RULE 1: CREATION ---
+
     @Test
     void createTask_ShouldSetStatusToPending() {
         when(taskRepository.save(any(Task.class))).thenReturn(sampleTask);
 
-        Task created = taskService.create(sampleTask);
+        Task created = taskService.createTask(sampleTask);
 
         assertEquals("pending", created.getStatus());
         verify(taskRepository, times(1)).save(sampleTask);
@@ -36,10 +57,10 @@ class TaskServiceTest {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(sampleTask));
         when(taskRepository.save(any(Task.class))).thenReturn(sampleTask);
 
-        Task updates = new Task();
+        UpdateTaskRequest updates = new UpdateTaskRequest();
         updates.setTitle("Updated Title");
 
-        Task result = taskService.updateDetails(1L, 100L, updates); // 100 is Assigner
+        Task result = taskService.updateTaskDetails(1L,  updates);
 
         assertEquals("Updated Title", result.getTitle());
     }
@@ -48,9 +69,9 @@ class TaskServiceTest {
     void updateDetails_WhenUserIsNotAssigner_ShouldThrowForbidden() {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(sampleTask));
 
-        // Attempting update as User 200 (the Assignee, not the Assigner)
+
         assertThrows(ResponseStatusException.class, () -> {
-            taskService.updateDetails(1L, 200L, new Task());
+            taskService.updateTaskDetails(1L, UpdateTaskRequest.builder().build());
         });
     }
 
@@ -59,7 +80,7 @@ class TaskServiceTest {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(sampleTask));
 
         assertThrows(ResponseStatusException.class, () -> {
-            taskService.delete(1L, 200L); // 200 is not the assigner
+            taskService.deleteTask(1L);
         });
     }
 
@@ -68,7 +89,7 @@ class TaskServiceTest {
         when(taskRepository.findById(1L)).thenReturn(Optional.of(sampleTask));
         when(taskRepository.save(any(Task.class))).thenReturn(sampleTask);
 
-        Task result = taskService.updateStatus(1L, 200L, "in-progress");
+        Task result = taskService.updateTaskStatus(1L,  Status.IN_PROGRESS);
 
         assertEquals("in-progress", result.getStatus());
     }
@@ -79,14 +100,14 @@ class TaskServiceTest {
 
 
         assertThrows(ResponseStatusException.class, () -> {
-            taskService.updateStatus(1L, 100L, "completed");
+            taskService.updateTaskStatus(1L,  Status.COMPLETED);
         });
     }
 
 
     @Test
     void getAllTasks_WithStatusFilter_ShouldCallCorrectRepoMethod() {
-        taskService.getAllTasks(null, "completed");
+        taskService.getAllTasks(null, Status.valueOf("completed"), Pageable.ofSize(1));
         verify(taskRepository, times(1)).findByStatus("completed");
     }
 }

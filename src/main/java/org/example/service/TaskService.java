@@ -1,16 +1,26 @@
 package org.example.service;
 
+import jakarta.transaction.Transactional;
 import org.example.domain.Status;
 import org.example.domain.Task;
 import org.example.dto.TaskRequest;
+import org.example.dto.UpdateTaskRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface TaskService {
-    public Task createTask(TaskRequest request);
-    public List<Task> getTasks(Long assignedTo, Status status);
-    public Task updateTask(Long taskId, TaskRequest request, Long userId);
-    public Task updateStatus(Long taskId, Status status, Long userId);
-    public Task unassignTask(Long taskId, Long userId);
-    public void deleteTask(Long taskId, Long userId);
+     Task createTask(TaskRequest request);
+    Task updateTaskDetails(Long taskId, UpdateTaskRequest updateTaskRequest);
+    Task updateTaskStatus(Long taskId, Status newStatus);
+     Task unassignTask(Long taskId, Long userId);
+
+
+    void deleteTask(Long taskId);
+    Page<Task> getTasks(Long assignedTo, Status status, Pageable pageable);
+    Page<Task> getAllTasks(Long assignedTo, Status status, Pageable pageable);
+
+    @Transactional
+    Task unassignTask(Long taskId);
 }
