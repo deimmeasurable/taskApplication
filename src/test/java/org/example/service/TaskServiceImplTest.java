@@ -2,6 +2,8 @@ package org.example.service;
 
 import org.example.domain.Status;
 import org.example.domain.Task;
+import org.example.dto.TaskRequest;
+import org.example.dto.TaskResponse;
 import org.example.dto.UpdateTaskRequest;
 import org.example.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +34,7 @@ class TaskServiceTest {
     @InjectMocks
     private TaskService taskService;
 
-    private Task sampleTask;
+    private TaskRequest sampleTask;
 
     @BeforeEach
 //    void setUp() {
@@ -45,9 +47,9 @@ class TaskServiceTest {
     void createTask_ShouldSetStatusToPending() {
         when(taskRepository.save(any(Task.class))).thenReturn(sampleTask);
 
-        Task created = taskService.createTask(sampleTask);
+        TaskResponse created = taskService.createTask(sampleTask);
 
-        assertEquals("pending", created.getStatus());
+        assertEquals("pending", created);
         verify(taskRepository, times(1)).save(sampleTask);
     }
 

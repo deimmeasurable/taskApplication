@@ -1,9 +1,11 @@
 package org.example.api;
 
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import lombok.RequiredArgsConstructor;
 import org.example.domain.Status;
 import org.example.domain.Task;
 import org.example.dto.TaskRequest;
+import org.example.dto.TaskResponse;
 import org.example.dto.UpdateTaskRequest;
 import org.example.service.TaskService;
 import org.springframework.data.domain.Page;
@@ -17,17 +19,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
+@RequiredArgsConstructor
 public class TaskController {
 
     private final TaskService service;
 
-    public TaskController(TaskService service) {
-        this.service = service;
-    }
-
     @PostMapping
-    public Task createTask(@RequestBody TaskRequest request) {
-        return service.createTask(request);
+    public ResponseEntity<TaskResponse> createTask(@RequestBody TaskRequest request) {
+        TaskResponse task= service.createTask(request);
+        return ResponseEntity.ok(task);
     }
 
 
@@ -43,30 +43,27 @@ public class TaskController {
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(
+    public ResponseEntity<TaskResponse> updateTask(
             @PathVariable Long id,
             @RequestBody UpdateTaskRequest request) {
-
-        // In a real JWT setup, use: SecurityUtils.getCurrentUserId()
-        // For now, if you are still testing manually, you can keep the userId parameter
-        Task updatedTask = service.updateTaskDetails(id, request);
+        TaskResponse updatedTask = service.updateTaskDetails(id, request);
         return ResponseEntity.ok(updatedTask);
     }
 
     // 4. Update Status
     @PatchMapping("/{id}/status")
-    public Task updateStatus(
+    public ResponseEntity<TaskResponse> updateStatus(
             @PathVariable Long id,
             @RequestParam Status status) {
-        return service.updateTaskStatus(id, status);
+        TaskResponse response= service.updateTaskStatus(id, status);
+        return ResponseEntity.ok(response);
     }
 
-    // 5. Unassign Task
     @PatchMapping("/{id}/unassign")
-    public Task unassignTask(
-            @PathVariable Long id,
-            @RequestParam Long userId) {
-        return service.unassignTask(id, userId);
+    public ResponseEntity<TaskResponse> unassignTask(
+            @PathVariable Long id){
+        TaskResponse response= service.unassignTask(id);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
@@ -79,8 +76,9 @@ public class TaskController {
 
     }
         @DeleteMapping("/{id}")
-        public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-            service.deleteTask(id);
-            return ResponseEntity.noContent().build(); // Returns 204 No Content on success
+        public ResponseEntity<TaskResponse> deleteTask(@PathVariable Long id) {
+            TaskResponse response=service.deleteTask(id);
+            return ResponseEntity.ok(response);
+
         }
 }

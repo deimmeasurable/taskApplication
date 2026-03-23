@@ -7,6 +7,7 @@ import org.example.domain.Status;
 import org.example.domain.Task;
 import org.example.domain.User;
 import org.example.dto.TaskRequest;
+import org.example.dto.TaskResponse;
 import org.example.dto.UpdateTaskRequest;
 import org.example.execptions.UnauthorizedActionException;
 import org.example.repository.TaskRepository;
@@ -28,7 +29,7 @@ public abstract class TaskServiceImpl implements TaskService {
 
   @Override
   @Transactional
-  public Task createTask(TaskRequest taskRequest) {
+  public TaskResponse createTask(TaskRequest taskRequest) {
 
       Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -49,14 +50,17 @@ public abstract class TaskServiceImpl implements TaskService {
       task.setAssignedBy(currentUserId);
       task.setStatus(Status.PENDING);
       task.setCreatedAt(LocalDateTime.now());
+      taskRepository.save(task);
+      return TaskResponse.builder()
+              .message("task created successfully")
+              .build();
 
-      return taskRepository.save(task);
   }
 
 
 
     @Transactional
-    public Task updateTaskDetails(Long taskId, UpdateTaskRequest updateTaskRequest) {
+    public TaskResponse updateTaskDetails(Long taskId, UpdateTaskRequest updateTaskRequest) {
 
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
@@ -75,13 +79,15 @@ public abstract class TaskServiceImpl implements TaskService {
         task.setTitle(updateTaskRequest.getTitle());
         task.setPriority(updateTaskRequest.getPriority());
 
-
-        return taskRepository.save(task);
+        taskRepository.save(task);
+        return TaskResponse.builder()
+                .message("task updated successfully")
+                .build();
     }
 
     @Transactional
     @Override
-    public Task updateTaskStatus(Long taskId, Status newStatus) {
+    public TaskResponse updateTaskStatus(Long taskId, Status newStatus) {
 
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found with ID: " + taskId));
@@ -101,14 +107,18 @@ public abstract class TaskServiceImpl implements TaskService {
         }
 
         task.setStatus(newStatus);
-        return taskRepository.save(task);
+        taskRepository.save(task);
+
+        return TaskResponse.builder()
+                .message("task status updated successfully")
+                .build();
     }
 
 
 
     @Override
     @Transactional
-    public void deleteTask(Long taskId) {
+    public TaskResponse deleteTask(Long taskId) {
 
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found with ID: " + taskId));
@@ -124,6 +134,10 @@ public abstract class TaskServiceImpl implements TaskService {
 
 
         taskRepository.delete(task);
+        return TaskResponse.builder()
+                .message("task  delete successfully")
+                .build();
+
     }
 
 
@@ -157,7 +171,7 @@ public Page<Task> getAllTasks(Long assignedTo, Status status, Pageable pageable)
     }
     @Transactional
     @Override
-    public Task unassignTask(Long taskId) {
+    public TaskResponse unassignTask(Long taskId) {
 
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found with ID: " + taskId));
@@ -176,7 +190,11 @@ public Page<Task> getAllTasks(Long assignedTo, Status status, Pageable pageable)
         task.setAssignedTo(null);
         task.setStatus(Status.PENDING);
 
-        return taskRepository.save(task);
+        taskRepository.save(task);
+        return TaskResponse.builder()
+                .message("unassignTask successfully")
+                .build();
+
     }
 }
 
