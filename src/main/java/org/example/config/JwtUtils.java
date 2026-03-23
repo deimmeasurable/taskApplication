@@ -12,10 +12,10 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    @Value("${secret_key}")
+    @Value("${SECRET_KEY}")
     private String secretKey;
 
-    @Value("${expiration_time}")
+    @Value("${EXPIRATION_TIME}")
     private long expirationTime;
 
     private Key signingKey;
