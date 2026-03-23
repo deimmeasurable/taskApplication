@@ -15,12 +15,8 @@ public interface TaskService {
     Task updateTaskDetails(Long taskId, UpdateTaskRequest updateTaskRequest);
     Task updateTaskStatus(Long taskId, Status newStatus);
      Task unassignTask(Long taskId, Long userId);
-
-
     void deleteTask(Long taskId);
     Page<Task> getTasks(Long assignedTo, Status status, Pageable pageable);
     Page<Task> getAllTasks(Long assignedTo, Status status, Pageable pageable);
 
-    @Transactional
-    Task unassignTask(Long taskId);
 }

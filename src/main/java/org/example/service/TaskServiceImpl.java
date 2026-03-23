@@ -82,11 +82,10 @@ public abstract class TaskServiceImpl implements TaskService {
     @Transactional
     @Override
     public Task updateTaskStatus(Long taskId, Status newStatus) {
-        // 1. Fetch the task
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found with ID: " + taskId));
 
-        // 2. Extract the ID directly at the Service Level
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!(principal instanceof UserPrincipal)) {
@@ -101,7 +100,6 @@ public abstract class TaskServiceImpl implements TaskService {
                     "Access Denied: Only the assignee can update this task's status.");
         }
 
-        // 4. Update and Save
         task.setStatus(newStatus);
         return taskRepository.save(task);
     }
